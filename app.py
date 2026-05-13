@@ -177,6 +177,8 @@ def registar():
             erro = "A password deve ter pelo menos 6 caracteres."
         elif perfil not in db.PERFIS:
             erro = "Perfil inválido."
+        elif perfil == "Coordenador" and db.contar_coordenadores() >= 2:
+            erro = "Já existem dois Coordenadores ativos. Não é possível registar mais."
         else:
             ok, msg = db.criar_utilizador(nome, email, password, perfil, pergunta, resposta)
             if ok:
@@ -523,6 +525,9 @@ def listar_utilizadores():
 def mudar_perfil(uid):
     novo = request.form.get("perfil")
     me = utilizador_atual()
+    if novo == "Coordenador" and db.contar_coordenadores() >= 2:
+        flash("Já existem dois Coordenadores ativos. Não é possível promover mais.", "danger")
+        return redirect(url_for("listar_utilizadores"))
     if uid == me["id"] and novo == "Colaborador" and db.contar_coordenadores() <= 1:
         flash("Não pode despromover-se: é o único Coordenador ativo.", "danger")
         return redirect(url_for("listar_utilizadores"))
@@ -540,7 +545,7 @@ def toggle_utilizador(uid):
         return redirect(url_for("listar_utilizadores"))
     u = db.obter_utilizador(uid)
     if u and u["perfil"] == "Coordenador" and u["ativo"] and db.contar_coordenadores() <= 1:
-        flash("Não pode desativar o único Coordenador ativo.", "danger")
+        flash("Não pode desativar o último Coordenador ativo.", "danger")
         return redirect(url_for("listar_utilizadores"))
     db.alternar_ativo(uid)
     flash("Estado do utilizador atualizado.", "success")
