@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block titulo %}{{ "Editar" if edicao else "Nova" }} ocorrência{% endblock %}
+{% block conteudo %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+    <h3 class="mb-0">
+        <i class="bi bi-clipboard2-plus"></i>
+        {{ "Editar" if edicao else "Nova" }} ocorrência
+        <span class="badge text-bg-secondary fs-6">Nº {{ "%03d"|format(numero) }}</span>
+    </h3>
+    <div class="d-flex gap-2 flex-wrap">
+        {% if not edicao %}
+        <button id="btnLimparForm" class="btn btn-outline-warning btn-sm" type="button">
+            <i class="bi bi-eraser"></i> Limpar
+        </button>
+        {% endif %}
+        <a href="{{ url_for('listar_ocorrencias') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+
+<form method="post" id="formOcorrencia" {% if edicao %}data-edicao="1"{% endif %} class="card shadow-sm">
+    <div class="card-body">
+
+        {# SECÇÃO: Identificação #}
+        <h6 class="text-uppercase text-muted small mb-3"><i class="bi bi-info-circle"></i> Identificação</h6>
+        <div class="row g-3">
+            <div class="col-12 col-md-4">
+                <label class="form-label">Data <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <input type="date" name="data" class="form-control" value="{{ dados.data }}" required>
+                    <button id="btnHoje" class="btn btn-outline-secondary" type="button" title="Preencher com hoje">
+                        <i class="bi bi-calendar-check"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label">Hora</label>
+                <div class="input-group">
+                    <input type="time" name="hora" class="form-control" value="{{ dados.hora }}">
+                    <button id="btnAgora" class="btn btn-outline-secondary" type="button" title="Hora atual">
+                        <i class="bi bi-clock"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <label class="form-label">Ciclo</label>
+                <select name="ciclo" class="form-select">
+                    <option value="">—</option>
+                    {% for c in ciclos %}<option value="{{ c }}" {% if dados.ciclo == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-6 col-md-3">
+                <label class="form-label">Ano</label>
+                <select name="ano" class="form-select">
+                    <option value="">—</option>
+                    {% for a in anos %}<option value="{{ a }}" {% if dados.ano == a %}selected{% endif %}>{{ a }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-6 col-md-3">
+                <label class="form-label">Turma</label>
+                <input type="text" name="turma" class="form-control" value="{{ dados.turma }}" placeholder="Ex: A, B, C…">
+            </div>
+            <div class="col-12 col-md-9">
+                <label class="form-label">Nome do aluno</label>
+                <input type="text" name="nome_aluno" list="nomeAlunosList" class="form-control"
+                       value="{{ dados.nome_aluno }}" placeholder="Nome completo ou 'Desconhecido'"
+                       autocomplete="off">
+                <datalist id="nomeAlunosList">
+                    {% for n in nomes_alunos %}<option value="{{ n }}">{% endfor %}
+                </datalist>
+            </div>
+        </div>
+
+        <hr class="my-3">
+        {# SECÇÃO: Registo #}
+        <h6 class="text-uppercase text-muted small mb-3"><i class="bi bi-person-badge"></i> Registo</h6>
+        <div class="row g-3">
+            <div class="col-12 col-md-6">
+                <label class="form-label">Colaborador de serviço <span class="text-danger">*</span></label>
+                <input type="text" name="colaborador" class="form-control" value="{{ dados.colaborador }}" required>
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label">Disciplina</label>
+                <input list="disciplinasList" name="disciplina" class="form-control"
+                       value="{{ dados.disciplina }}" placeholder="Selecione ou escreva" autocomplete="off">
+                <datalist id="disciplinasList">
+                    {% for d in disciplinas %}<option value="{{ d }}">{% endfor %}
+                </datalist>
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label">Local</label>
+                <select name="local" class="form-select">
+                    <option value="">—</option>
+                    {% for l in locais %}<option value="{{ l }}" {% if dados.local == l %}selected{% endif %}>{{ l }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label">Contactos com EE</label>
+                <select name="contactos_ee" class="form-select">
+                    {% for c in contactos_ee %}<option value="{{ c }}" {% if dados.contactos_ee == c %}selected{% endif %}>{{ c or '—' }}</option>{% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <hr class="my-3">
+        {# SECÇÃO: Motivos #}
+        <h6 class="text-uppercase text-muted small mb-3"><i class="bi bi-exclamation-triangle"></i> Motivos</h6>
+        <div class="row g-3">
+            <div class="col-12 col-md-6">
+                <label class="form-label">Motivo 1</label>
+                <select name="motivo1" class="form-select">
+                    <option value="">—</option>
+                    {% for m in motivos %}<option value="{{ m }}" {% if dados.motivo1 == m %}selected{% endif %}>{{ m }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label">Motivo 2</label>
+                <select name="motivo2" class="form-select">
+                    <option value="">—</option>
+                    {% for m in motivos %}<option value="{{ m }}" {% if dados.motivo2 == m %}selected{% endif %}>{{ m }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label">Com quem?</label>
+                <select name="com_quem" class="form-select">
+                    <option value="">—</option>
+                    {% for c in com_quem %}<option value="{{ c }}" {% if dados.com_quem == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label">Destruição de bens/materiais</label>
+                <select name="destruicao" class="form-select">
+                    {% for d in destruicao %}<option value="{{ d }}" {% if dados.destruicao == d %}selected{% endif %}>{{ d or '—' }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Atividade a realizar no GA</label>
+                <input type="text" name="atividade_ga" class="form-control" value="{{ dados.atividade_ga }}">
+            </div>
+        </div>
+
+        <hr class="my-3">
+        {# SECÇÃO: Descrição #}
+        <h6 class="text-uppercase text-muted small mb-3"><i class="bi bi-file-text"></i> Descrição</h6>
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label">Descrição da ocorrência</label>
+                <textarea name="descricao" class="form-control" rows="4" data-max="1000">{{ dados.descricao }}</textarea>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Observações</label>
+                <textarea name="observacoes" class="form-control" rows="2" data-max="500">{{ dados.observacoes }}</textarea>
+            </div>
+        </div>
+
+        <hr class="my-3">
+        {# SECÇÃO: Acompanhamento #}
+        <h6 class="text-uppercase text-muted small mb-3"><i class="bi bi-clipboard-check"></i> Acompanhamento GAAF</h6>
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label">Intervenção do GAAF</label>
+                <textarea name="intervencao_gaaf" class="form-control" rows="2" data-max="500">{{ dados.intervencao_gaaf }}</textarea>
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="form-label">Situação</label>
+                <select name="situacao" class="form-select">
+                    <option value="">—</option>
+                    {% for s in situacoes %}<option value="{{ s }}" {% if dados.situacao == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+                </select>
+            </div>
+            {% if user.perfil == 'Coordenador' %}
+            <div class="col-12">
+                <label class="form-label">Medidas aplicadas</label>
+                <textarea name="medidas_aplicadas" class="form-control" rows="2" data-max="500">{{ dados.medidas_aplicadas }}</textarea>
+            </div>
+            {% else %}
+                <input type="hidden" name="medidas_aplicadas" value="{{ dados.medidas_aplicadas }}">
+            {% endif %}
+        </div>
+
+    </div>
+    <div class="card-footer d-flex justify-content-between flex-wrap gap-2">
+        <a href="{{ url_for('listar_ocorrencias') }}" class="btn btn-outline-secondary">Cancelar</a>
+        <button class="btn btn-primary" type="submit">
+            <i class="bi bi-check-circle"></i> {{ "Guardar alterações" if edicao else "Registar ocorrência" }}
+        </button>
+    </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/form.js') }}"></script>
+{% endblock %}

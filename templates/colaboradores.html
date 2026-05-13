@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block titulo %}Colaboradores{% endblock %}
+{% block conteudo %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+    <h3 class="mb-0"><i class="bi bi-person-lines-fill"></i> Colaboradores</h3>
+    <small class="text-muted">{{ utilizadores|length }} utilizador{{ 'es' if utilizadores|length != 1 else '' }} registado{{ 's' if utilizadores|length != 1 else '' }}</small>
+</div>
+
+<div class="row g-3">
+    {% for u in utilizadores %}
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-start gap-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                     style="width:48px;height:48px;background:{{ '#1f6feb' if u.perfil == 'Coordenador' else '#6c8fa8' }};color:#fff;font-size:1.3rem">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <div class="overflow-hidden">
+                    <div class="fw-semibold text-truncate">{{ u.nome }}</div>
+                    <div class="small text-muted text-truncate">{{ u.email }}</div>
+                    <div class="mt-1">
+                        <span class="badge text-bg-{{ 'primary' if u.perfil == 'Coordenador' else 'secondary' }}">
+                            {{ u.perfil }}
+                        </span>
+                        {% if not u.ativo %}
+                        <span class="badge text-bg-warning">Inativo</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">Nenhum utilizador registado.</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

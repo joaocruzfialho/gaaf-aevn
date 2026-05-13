@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block titulo %}Criar conta{% endblock %}
+{% block conteudo %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-9 col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="mb-3"><i class="bi bi-person-plus"></i> Criar conta</h4>
+                {% if erro %}
+                    <div class="alert alert-danger">{{ erro }}</div>
+                {% endif %}
+                <form method="post" novalidate>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Nome completo</label>
+                            <input type="text" name="nome" class="form-control" required autofocus>
+                        </div>
+                        <div class="col-12 col-md-7">
+                            <label class="form-label">Email pessoal</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="col-12 col-md-5">
+                            <label class="form-label">Perfil</label>
+                            <select name="perfil" class="form-select" required>
+                                <option value="Colaborador" selected>Colaborador (Gabinete de Atendimento)</option>
+                                <option value="Coordenador">Coordenador do GAAF</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="inputPassword">Password (mín. 6 caracteres)</label>
+                            <div class="input-group">
+                                <input type="password" id="inputPassword" name="password" class="form-control" required>
+                                <button class="btn btn-outline-secondary btn-mostrar-pass" type="button"
+                                        data-target="inputPassword" title="Mostrar / ocultar">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <div class="mt-1" style="height:4px;background:#e9ecef;border-radius:2px">
+                                <div id="strengthBar" class="strength-bar" style="height:100%;width:0;border-radius:2px;transition:width .3s,background .3s"></div>
+                            </div>
+                            <small id="strengthLabel" class="text-muted"></small>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="inputPassword2">Confirmar password</label>
+                            <div class="input-group">
+                                <input type="password" id="inputPassword2" name="password2" class="form-control" required>
+                                <button class="btn btn-outline-secondary btn-mostrar-pass" type="button"
+                                        data-target="inputPassword2" title="Mostrar / ocultar">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback">As passwords não coincidem.</div>
+                            <div class="valid-feedback">As passwords coincidem.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Pergunta de segurança</label>
+                            <input type="text" name="pergunta" class="form-control"
+                                   placeholder="Ex: Qual o nome do meu primeiro animal de estimação?" required>
+                            <div class="form-text">Será usada para recuperar a password.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Resposta à pergunta</label>
+                            <input type="text" name="resposta" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Voltar
+                        </a>
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-check-circle"></i> Criar conta
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/form.js') }}"></script>
+{% endblock %}

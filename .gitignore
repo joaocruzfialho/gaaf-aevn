@@ -1,0 +1,12 @@
+*.db
+__pycache__/
+*.pyc
+*.pyo
+*.xlsx
+*.docx
+*.png
+*.vbs
+*.bat
+*.ps1
+~$*
+.env

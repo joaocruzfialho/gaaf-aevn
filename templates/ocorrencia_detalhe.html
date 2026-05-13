@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block titulo %}Ocorrência nº {{ "%03d"|format(o.id) }}{% endblock %}
+{% block conteudo %}
+
+{# Navegação anterior / próximo #}
+{% if anterior or proximo %}
+<div class="d-flex justify-content-between mb-2">
+    {% if anterior %}
+    <a href="{{ url_for('ver_ocorrencia', oid=anterior) }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-chevron-left"></i> Nº {{ "%03d"|format(anterior) }}
+    </a>
+    {% else %}<span></span>{% endif %}
+    {% if proximo %}
+    <a href="{{ url_for('ver_ocorrencia', oid=proximo) }}" class="btn btn-outline-secondary btn-sm">
+        Nº {{ "%03d"|format(proximo) }} <i class="bi bi-chevron-right"></i>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+    <h3 class="mb-0">
+        <i class="bi bi-clipboard2-check"></i>
+        Ocorrência <span class="badge text-bg-primary fs-6">Nº {{ "%03d"|format(o.id) }}</span>
+        {% if o.situacao %}
+        <span class="badge fs-6 text-bg-{% if o.situacao == 'Resolvido' %}success{% elif o.situacao == 'Arquivado' %}secondary{% elif o.situacao == 'Encaminhado' %}primary{% elif o.situacao == 'Em curso' %}info{% else %}warning{% endif %}">
+            {{ o.situacao }}
+        </span>
+        {% endif %}
+    </h3>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('listar_ocorrencias') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> <span class="d-none d-sm-inline">Voltar</span>
+        </a>
+        <a href="{{ url_for('imprimir_ocorrencia', oid=o.id) }}" class="btn btn-outline-secondary btn-sm" target="_blank">
+            <i class="bi bi-printer"></i> <span class="d-none d-sm-inline">Imprimir</span>
+        </a>
+        <button class="btn btn-outline-secondary btn-sm btn-copiar"
+                data-texto="Ocorrência Nº {{ '%03d'|format(o.id) }} | {{ o.data|data_pt }} {{ o.hora or '' }} | {{ o.nome_aluno or '' }} | {{ o.motivo1 or '' }}{% if o.motivo2 %} / {{ o.motivo2 }}{% endif %} | {{ o.local or '' }} | Situação: {{ o.situacao or '—' }}"
+                title="Copiar informação">
+            <i class="bi bi-clipboard"></i>
+        </button>
+        {% if pode_editar %}
+        <a href="{{ url_for('duplicar_ocorrencia', oid=o.id) }}" class="btn btn-outline-info btn-sm" title="Duplicar ocorrência">
+            <i class="bi bi-copy"></i> <span class="d-none d-sm-inline">Duplicar</span>
+        </a>
+        <a href="{{ url_for('editar_ocorrencia', oid=o.id) }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-pencil"></i> <span class="d-none d-sm-inline">Editar</span>
+        </a>
+        {% if user.perfil == 'Coordenador' %}
+        <form method="post" action="{{ url_for('eliminar_ocorrencia', oid=o.id) }}"
+              onsubmit="return confirm('Eliminar definitivamente a ocorrência nº {{ '%03d'|format(o.id) }}?');">
+            <button class="btn btn-outline-danger btn-sm" type="submit">
+                <i class="bi bi-trash"></i>
+            </button>
+        </form>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4 col-md-3">Data / Hora</dt>
+            <dd class="col-sm-8 col-md-9">{{ o.data|data_pt }} {{ o.hora or "" }}</dd>
+
+            <dt class="col-sm-4 col-md-3">Ciclo / Ano / Turma</dt>
+            <dd class="col-sm-8 col-md-9">{{ o.ciclo or "—" }} · {{ o.ano or "—" }} · {{ o.turma or "—" }}</dd>
+
+            <dt class="col-sm-4 col-md-3">Nome do aluno</dt>
+            <dd class="col-sm-8 col-md-9">{{ o.nome_aluno or "—" }}</dd>
+
+            <dt class="col-sm-4 col-md-3">Quem fez o registo</dt>
+            <dd class="col-sm-8 col-md-9">{{ o.colaborador or "—" }}</dd>
+
+            <dt class="col-sm-4 col-md-3">Disciplina</dt>
+            <dd class="col-sm-8 col-md-9">{{ o.disciplina or "—" }}</dd>
+
+            <dt class="col-sm-4 col-md-3">Local</dt>
+            <dd class="col-sm-8 col-md-9">{{ o.local or "—" }}</dd>
+
+            <dt class="col-sm-4 col-md-3">Contactos EE</dt>
+            <dd class="col-sm-8 col-md-9">{{ o.contactos_ee or "—" }}</dd>
+
+            <dt class="col-sm-4 col-md-3">Atividade no GA</dt>
+            <dd class="col-sm-8 col-md-9">{{ o.atividade_ga or "—" }}</dd>
+
+            <dt class="col-sm-4 col-md-3">Motivo 1</dt>
+            <dd class="col-sm-8 col-md-9">{{ o.motivo1 or "—" }}</dd>
+
+            <dt class="col-sm-4 col-md-3">Motivo 2</dt>
+            <dd class="col-sm-8 col-md-9">{{ o.motivo2 or "—" }}</dd>
+
+            <dt class="col-sm-4 col-md-3">Com quem?</dt>
+            <dd class="col-sm-8 col-md-9">{{ o.com_quem or "—" }}</dd>
+
+            <dt class="col-sm-4 col-md-3">Destruição bens/materiais</dt>
+            <dd class="col-sm-8 col-md-9">{{ o.destruicao or "—" }}</dd>
+
+            {% if o.descricao %}
+            <dt class="col-sm-4 col-md-3">Descrição da ocorrência</dt>
+            <dd class="col-sm-8 col-md-9" style="white-space:pre-wrap">{{ o.descricao }}</dd>
+            {% endif %}
+
+            {% if o.observacoes %}
+            <dt class="col-sm-4 col-md-3">Observações</dt>
+            <dd class="col-sm-8 col-md-9" style="white-space:pre-wrap">{{ o.observacoes }}</dd>
+            {% endif %}
+
+            {% if o.intervencao_gaaf %}
+            <dt class="col-sm-4 col-md-3">Intervenção do GAAF</dt>
+            <dd class="col-sm-8 col-md-9" style="white-space:pre-wrap">{{ o.intervencao_gaaf }}</dd>
+            {% endif %}
+
+            {% if o.medidas_aplicadas %}
+            <dt class="col-sm-4 col-md-3">Medidas aplicadas</dt>
+            <dd class="col-sm-8 col-md-9" style="white-space:pre-wrap">{{ o.medidas_aplicadas }}</dd>
+            {% endif %}
+
+            <dt class="col-sm-4 col-md-3">Situação</dt>
+            <dd class="col-sm-8 col-md-9">
+                {% if o.situacao %}<span class="badge text-bg-{% if o.situacao == 'Resolvido' %}success{% elif o.situacao == 'Arquivado' %}secondary{% elif o.situacao == 'Encaminhado' %}primary{% elif o.situacao == 'Em curso' %}info{% else %}warning{% endif %}">{{ o.situacao }}</span>{% else %}—{% endif %}
+                {% if user.perfil == 'Coordenador' %}
+                <button class="btn btn-outline-secondary btn-sm ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAlterarSituacao">
+                    <i class="bi bi-pencil-square"></i> Alterar
+                </button>
+                <div class="collapse mt-2" id="collapseAlterarSituacao">
+                    <form method="post" action="{{ url_for('mudar_situacao', oid=o.id) }}" class="d-flex gap-2 align-items-center">
+                        <select name="situacao" class="form-select form-select-sm" style="width:auto">
+                            <option value="">—</option>
+                            {% for s in situacoes %}<option value="{{ s }}" {% if o.situacao == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+                        </select>
+                        <button class="btn btn-sm btn-primary" type="submit">Guardar</button>
+                    </form>
+                </div>
+                {% endif %}
+            </dd>
+
+            <dt class="col-sm-4 col-md-3 text-muted small">Registado em</dt>
+            <dd class="col-sm-8 col-md-9 text-muted small">
+                {{ o.criado_em|datahora_pt }} {% if o.criado_por_nome %}por {{ o.criado_por_nome }}{% endif %}
+            </dd>
+        </dl>
+    </div>
+</div>
+
+{# Outras ocorrências do mesmo aluno #}
+{% if outras_do_aluno %}
+<h5 class="mb-2">
+    <i class="bi bi-person-exclamation"></i>
+    Outras ocorrências de <em>{{ o.nome_aluno }}</em>
+    <span class="badge text-bg-secondary">{{ outras_do_aluno|length }}</span>
+</h5>
+<div class="list-group mb-4">
+    {% for r in outras_do_aluno %}
+    <a href="{{ url_for('ver_ocorrencia', oid=r.id) }}"
+       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+        <div>
+            <b>Nº {{ "%03d"|format(r.id) }}</b>
+            <span class="text-muted ms-2 small">{{ r.data|data_pt }}</span>
+            {% if r.motivo1 %}<span class="ms-2 small">{{ r.motivo1 }}</span>{% endif %}
+        </div>
+        {% if r.situacao %}
+        <span class="badge text-bg-secondary">{{ r.situacao }}</span>
+        {% endif %}
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}

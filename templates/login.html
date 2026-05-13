@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block titulo %}Iniciar sessão{% endblock %}
+{% block conteudo %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-7 col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <div class="text-center mb-3">
+                    <i class="bi bi-clipboard2-pulse-fill text-primary" style="font-size:3rem"></i>
+                    <h4 class="mt-2 mb-0">Registo de Ocorrências</h4>
+                    <small class="text-muted">GAAF · Agrupamento de Escolas de Vendas Novas</small>
+                </div>
+                <form method="post" novalidate autocomplete="off">
+                    <div class="mb-3">
+                        <label class="form-label" for="loginEmail">Email pessoal</label>
+                        <input type="email" id="loginEmail" name="email" class="form-control form-control-lg"
+                               required autofocus autocomplete="off">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="loginPass">Password</label>
+                        <div class="input-group">
+                            <input type="password" id="loginPass" name="password" class="form-control form-control-lg"
+                                   required autocomplete="new-password">
+                            <button class="btn btn-outline-secondary btn-mostrar-pass" type="button"
+                                    data-target="loginPass" title="Mostrar / ocultar">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="lembrar" name="lembrar" value="1">
+                        <label class="form-check-label" for="lembrar">Manter sessão iniciada (7 dias)</label>
+                    </div>
+                    <button class="btn btn-primary btn-lg w-100" type="submit">
+                        <i class="bi bi-box-arrow-in-right"></i> Entrar
+                    </button>
+                </form>
+                <hr>
+                <div class="d-flex justify-content-between flex-wrap gap-2">
+                    <a href="{{ url_for('registar') }}">
+                        <i class="bi bi-person-plus"></i> Criar conta
+                    </a>
+                    <a href="{{ url_for('recuperar') }}">
+                        <i class="bi bi-key"></i> Esqueci-me da password
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-3">
+            <button id="toggleTemaLogin" class="btn btn-sm btn-outline-secondary" type="button">
+                <i class="bi bi-circle-half"></i> Alternar modo claro/escuro
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/form.js') }}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("loginEmail").value = "";
+    document.getElementById("loginPass").value = "";
+});
+</script>
+{% endblock %}

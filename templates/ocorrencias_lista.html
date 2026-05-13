@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% block titulo %}Ocorrências{% endblock %}
+{% block conteudo %}
+
+{# Cabeçalho #}
+<div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+    <div>
+        <h3 class="mb-0"><i class="bi bi-list-ul"></i> Ocorrências</h3>
+        <small class="text-muted">
+            {{ ocorrencias|length }} resultado{{ 's' if ocorrencias|length != 1 else '' }}
+            {% if total_geral is defined and total_geral != ocorrencias|length %}
+                de {{ total_geral }} total
+            {% endif %}
+        </small>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        {% if user.perfil == 'Coordenador' %}
+        <a href="{{ url_for('exportar_csv') }}" class="btn btn-outline-success btn-sm">
+            <i class="bi bi-filetype-csv"></i> <span class="d-none d-sm-inline">Exportar</span> CSV
+        </a>
+        {% endif %}
+        <a href="{{ url_for('nova_ocorrencia') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle"></i> Nova
+        </a>
+    </div>
+</div>
+
+{# Filtros rápidos (chips) #}
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a href="{{ url_for('listar_ocorrencias') }}" class="filtro-chip {{ 'active' if not filtros.data_de and not filtros.data_ate else '' }}">
+        <i class="bi bi-funnel"></i> Todas
+    </a>
+    <a href="{{ url_for('listar_ocorrencias', data_de=hoje_str, data_ate=hoje_str) }}" class="filtro-chip">
+        <i class="bi bi-sun"></i> Hoje
+    </a>
+    <a href="{{ url_for('listar_ocorrencias', data_de=semana_str) }}" class="filtro-chip">
+        <i class="bi bi-calendar-week"></i> Esta semana
+    </a>
+    <a href="{{ url_for('listar_ocorrencias', data_de=mes_str) }}" class="filtro-chip">
+        <i class="bi bi-calendar-month"></i> Este mês
+    </a>
+</div>
+
+{# Painel de filtros #}
+<form class="card mb-3" method="get" id="filtroForm">
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-12">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" id="pesquisaRapida" class="form-control"
+                           placeholder="Pesquisar em tempo real (aluno, local, colaborador…)"
+                           autocomplete="off">
+                </div>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label small mb-1">Ciclo</label>
+                <select name="ciclo" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    {% for c in ciclos %}<option value="{{ c }}" {% if filtros.ciclo == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-6 col-md-2 col-lg-1">
+                <label class="form-label small mb-1">Ano</label>
+                <select name="ano" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    {% for a in anos %}<option value="{{ a }}" {% if filtros.ano == a %}selected{% endif %}>{{ a }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-6 col-md-2 col-lg-1">
+                <label class="form-label small mb-1">Turma</label>
+                <input type="text" name="turma" class="form-control form-control-sm" value="{{ filtros.turma }}">
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label small mb-1">Local</label>
+                <select name="local" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    {% for l in locais %}<option value="{{ l }}" {% if filtros.local == l %}selected{% endif %}>{{ l }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label small mb-1">Motivo</label>
+                <select name="motivo" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    {% for m in motivos %}<option value="{{ m }}" {% if filtros.motivo == m %}selected{% endif %}>{{ m }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label small mb-1">Situação</label>
+                <select name="situacao" class="form-select form-select-sm">
+                    <option value="">Todas</option>
+                    {% for s in situacoes %}<option value="{{ s }}" {% if filtros.get('situacao') == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label small mb-1">Data de</label>
+                <input type="date" name="data_de" class="form-control form-control-sm" value="{{ filtros.data_de }}">
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label small mb-1">Data até</label>
+                <input type="date" name="data_ate" class="form-control form-control-sm" value="{{ filtros.data_ate }}">
+            </div>
+            <div class="col-12 col-md-6 col-lg-3 d-flex align-items-end gap-2 flex-wrap">
+                <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-funnel"></i> Filtrar</button>
+                <a href="{{ url_for('listar_ocorrencias') }}" class="btn btn-outline-secondary btn-sm">Limpar</a>
+                {% if user.perfil == 'Coordenador' %}
+                <button type="submit" form="filtroForm" formaction="{{ url_for('exportar_filtrado') }}"
+                        class="btn btn-outline-success btn-sm" title="Exportar com filtros atuais">
+                    <i class="bi bi-download"></i> CSV filtrado
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</form>
+
+{# Controlo de resultados #}
+{% if ocorrencias %}
+<div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+    <div class="small text-muted">{{ ocorrencias|length }} ocorrência{{ 's' if ocorrencias|length != 1 else '' }}</div>
+    <div class="d-flex align-items-center gap-2">
+        <label class="small text-muted mb-0">Mostrar:</label>
+        <select id="porPagina" class="form-select form-select-sm" style="width:auto">
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="0">Todas</option>
+        </select>
+    </div>
+</div>
+
+{# Tabela desktop #}
+<div class="table-responsive d-none d-md-block">
+    <table class="table table-hover table-sm align-middle sortable-table">
+        <thead>
+            <tr>
+                <th class="sortable">Nº</th>
+                <th class="sortable">Data</th>
+                <th class="sortable">Hora</th>
+                <th class="sortable">Ciclo</th>
+                <th class="sortable">Ano/Turma</th>
+                <th class="sortable">Aluno</th>
+                <th class="sortable">Local</th>
+                <th class="sortable">Motivo</th>
+                <th class="sortable">Situação</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for o in ocorrencias %}
+            {% set sit = o.situacao|lower|replace(' ', '-') if o.situacao else '' %}
+            <tr class="{% if sit == 'em-análise' %}linha-em-analise{% elif sit == 'em-curso' %}linha-em-curso{% elif sit == 'encaminhado' %}linha-encaminhado{% elif sit == 'resolvido' %}linha-resolvido{% elif sit == 'arquivado' %}linha-arquivado{% endif %}">
+                <td><b>{{ "%03d"|format(o.id) }}</b></td>
+                <td>{{ o.data|data_pt }}</td>
+                <td>{{ o.hora or "" }}</td>
+                <td>{{ o.ciclo or "" }}</td>
+                <td>{{ o.ano or "" }}{% if o.turma %} {{ o.turma }}{% endif %}</td>
+                <td class="text-truncate" style="max-width:160px" title="{{ o.nome_aluno }}">{{ o.nome_aluno or "" }}</td>
+                <td>{{ o.local or "" }}</td>
+                <td class="text-truncate" style="max-width:180px"
+                    title="{{ o.motivo1 }}{% if o.motivo2 %} / {{ o.motivo2 }}{% endif %}">
+                    {{ o.motivo1 or "" }}{% if o.motivo2 %} / {{ o.motivo2 }}{% endif %}
+                </td>
+                <td>
+                    {% if o.situacao %}
+                    <span class="badge text-bg-{% if o.situacao == 'Resolvido' %}success{% elif o.situacao == 'Arquivado' %}secondary{% elif o.situacao == 'Encaminhado' %}primary{% elif o.situacao == 'Em curso' %}info{% else %}warning{% endif %}">
+                        {{ o.situacao }}
+                    </span>
+                    {% endif %}
+                </td>
+                <td class="text-end text-nowrap">
+                    <a href="{{ url_for('ver_ocorrencia', oid=o.id) }}" class="btn btn-sm btn-outline-primary" title="Ver"><i class="bi bi-eye"></i></a>
+                    {% if o._pode_editar %}
+                    <a href="{{ url_for('editar_ocorrencia', oid=o.id) }}" class="btn btn-sm btn-outline-secondary" title="Editar"><i class="bi bi-pencil"></i></a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{# Cards mobile #}
+<div class="d-md-none">
+    {% for o in ocorrencias %}
+    {% set sit = o.situacao|lower|replace(' ', '-') if o.situacao else '' %}
+    <div class="card mb-2 card-ocorrencia-mobile {% if sit == 'em-análise' %}linha-em-analise{% elif sit == 'em-curso' %}linha-em-curso{% elif sit == 'encaminhado' %}linha-encaminhado{% elif sit == 'resolvido' %}linha-resolvido{% elif sit == 'arquivado' %}linha-arquivado{% endif %}">
+        <div class="card-body p-3">
+            <div class="d-flex justify-content-between mb-1">
+                <b>Nº {{ "%03d"|format(o.id) }}</b>
+                <small class="text-muted">{{ o.data|data_pt }} {{ o.hora or "" }}</small>
+            </div>
+            <div class="small mb-1">
+                {% if o.ciclo %}<span class="badge text-bg-secondary">{{ o.ciclo }}</span>{% endif %}
+                {% if o.ano %}<span class="badge text-bg-light text-dark border">{{ o.ano }} {{ o.turma or "" }}</span>{% endif %}
+                {% if o.situacao %}
+                <span class="badge text-bg-{% if o.situacao == 'Resolvido' %}success{% elif o.situacao == 'Arquivado' %}secondary{% elif o.situacao == 'Encaminhado' %}primary{% elif o.situacao == 'Em curso' %}info{% else %}warning{% endif %}">
+                    {{ o.situacao }}
+                </span>
+                {% endif %}
+            </div>
+            <div><b>{{ o.nome_aluno or "(sem nome)" }}</b></div>
+            <div class="small text-muted">{{ o.motivo1 or "" }}{% if o.motivo2 %} / {{ o.motivo2 }}{% endif %}</div>
+            <div class="small text-muted">{{ o.local or "" }}</div>
+            <div class="mt-2 d-flex gap-2">
+                <a href="{{ url_for('ver_ocorrencia', oid=o.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> Ver</a>
+                {% if o._pode_editar %}
+                <a href="{{ url_for('editar_ocorrencia', oid=o.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i> Editar</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="alert alert-info">Nenhuma ocorrência encontrada com os filtros atuais.</div>
+{% endif %}
+{% endblock %}

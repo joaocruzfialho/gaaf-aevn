@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block titulo %}Início{% endblock %}
+{% block rodape_extra %}
+    <div class="mt-1">Criado por {{ app_author }}</div>
+    <div>Versão {{ app_version }}</div>
+{% endblock %}
+{% block conteudo %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-0">Olá, {{ user.nome.split()[0] }}</h3>
+        <small class="text-muted">{{ user.perfil }} · {{ user.email }}</small>
+    </div>
+</div>
+
+{# Contadores rápidos hoje / semana #}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-sm-4 col-xl-2">
+        <div class="card text-bg-primary h-100">
+            <div class="card-body text-center">
+                <div class="small text-uppercase opacity-75">Este ano letivo</div>
+                <div class="display-6 fw-bold">{{ stats.total }}</div>
+                <small>Ocorrências</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-sm-4 col-xl-2">
+        <div class="card text-bg-success h-100">
+            <div class="card-body text-center">
+                <div class="small text-uppercase opacity-75">Hoje</div>
+                <div class="display-6 fw-bold">{{ hoje }}</div>
+                <small>Registadas</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-sm-4 col-xl-2">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="small text-uppercase text-muted">Esta semana</div>
+                <div class="display-6 fw-bold">{{ semana }}</div>
+                <small class="text-muted">Registadas</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-sm-4 col-xl-2">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="small text-uppercase text-muted">Este mês</div>
+                <div class="display-6 fw-bold">{{ mes }}</div>
+                <small class="text-muted">Registadas</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-8 col-xl-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="small text-uppercase text-muted">Top motivos</div>
+                <ul class="list-unstyled mb-0 small">
+                    {% for c, n in stats.por_motivo[:3] %}
+                        <li class="d-flex justify-content-between">
+                            <span class="text-truncate me-2" title="{{ c }}">{{ c }}</span>
+                            <b>{{ n }}</b>
+                        </li>
+                    {% else %}
+                        <li class="text-muted">Sem dados</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Atalhos de ação #}
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-6 col-lg-4">
+        <a href="{{ url_for('nova_ocorrencia') }}" class="text-decoration-none">
+            <div class="card border-primary h-100 acao-card">
+                <div class="card-body">
+                    <i class="bi bi-plus-circle-fill text-primary fs-1"></i>
+                    <h5 class="mt-2">Nova ocorrência</h5>
+                    <p class="text-muted small mb-0">Registar uma nova ocorrência no GAAF. <kbd>Alt+N</kbd></p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-12 col-md-6 col-lg-4">
+        <a href="{{ url_for('listar_ocorrencias') }}" class="text-decoration-none">
+            <div class="card h-100 acao-card">
+                <div class="card-body">
+                    <i class="bi bi-list-ul fs-1"></i>
+                    <h5 class="mt-2">Consultar ocorrências</h5>
+                    <p class="text-muted small mb-0">Ver e filtrar todos os registos.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% if user.perfil == 'Coordenador' %}
+    <div class="col-12 col-md-6 col-lg-4">
+        <a href="{{ url_for('estatisticas') }}" class="text-decoration-none">
+            <div class="card h-100 acao-card">
+                <div class="card-body">
+                    <i class="bi bi-bar-chart-fill fs-1"></i>
+                    <h5 class="mt-2">Estatísticas</h5>
+                    <p class="text-muted small mb-0">Dashboards mensal, semestral e anual.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{# Registos recentes #}
+{% if recentes %}
+<h5 class="mb-2"><i class="bi bi-clock-history"></i> Registos recentes</h5>
+<div class="list-group mb-3">
+    {% for r in recentes %}
+    <a href="{{ url_for('ver_ocorrencia', oid=r.id) }}"
+       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+        <div>
+            <span class="fw-semibold">Nº {{ "%03d"|format(r.id) }}</span>
+            <span class="text-muted ms-2 small">{{ r.data|data_pt }}</span>
+            {% if r.nome_aluno %}<span class="ms-2">{{ r.nome_aluno }}</span>{% endif %}
+            {% if r.situacao %}<span class="badge text-bg-secondary ms-2">{{ r.situacao }}</span>{% endif %}
+        </div>
+        <small class="text-muted d-none d-sm-inline">{{ r.colaborador or "" }}</small>
+    </a>
+    {% endfor %}
+</div>
+<div class="text-end mb-4">
+    <a href="{{ url_for('listar_ocorrencias') }}" class="btn btn-outline-primary btn-sm">Ver todas <i class="bi bi-arrow-right"></i></a>
+</div>
+{% endif %}
+{% endblock %}

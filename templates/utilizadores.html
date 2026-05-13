@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block titulo %}Utilizadores{% endblock %}
+{% block conteudo %}
+<h3 class="mb-3"><i class="bi bi-people"></i> Gestão de Utilizadores</h3>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th>Nome</th><th>Email</th><th>Perfil</th><th>Estado</th><th>Criado em</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in utilizadores %}
+                <tr>
+                    <td><b>{{ u.nome }}</b>{% if u.id == user.id %} <span class="badge text-bg-secondary">eu</span>{% endif %}</td>
+                    <td>{{ u.email }}</td>
+                    <td>
+                        <form method="post" action="{{ url_for('mudar_perfil', uid=u.id) }}" class="d-flex gap-1">
+                            <select name="perfil" class="form-select form-select-sm" {% if u.id == user.id %}disabled{% endif %}>
+                                <option value="Colaborador" {% if u.perfil == 'Colaborador' %}selected{% endif %}>Colaborador</option>
+                                <option value="Coordenador" {% if u.perfil == 'Coordenador' %}selected{% endif %}>Coordenador</option>
+                            </select>
+                            {% if u.id != user.id %}
+                            <button class="btn btn-sm btn-outline-primary" type="submit"><i class="bi bi-check"></i></button>
+                            {% endif %}
+                        </form>
+                    </td>
+                    <td>
+                        {% if u.ativo %}
+                            <span class="badge text-bg-success">Ativo</span>
+                        {% else %}
+                            <span class="badge text-bg-secondary">Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td class="small text-muted">{{ u.criado_em|datahora_pt }}</td>
+                    <td class="text-end">
+                        {% if u.id != user.id %}
+                        <form method="post" action="{{ url_for('toggle_utilizador', uid=u.id) }}"
+                              onsubmit="return confirm('{{ "Desativar" if u.ativo else "Ativar" }} este utilizador?');">
+                            <button class="btn btn-sm btn-outline-{{ 'danger' if u.ativo else 'success' }}" type="submit">
+                                {{ "Desativar" if u.ativo else "Ativar" }}
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

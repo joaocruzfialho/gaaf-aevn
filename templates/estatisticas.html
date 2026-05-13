@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block titulo %}Estatísticas{% endblock %}
+{% block conteudo %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+    <h3 class="mb-0"><i class="bi bi-bar-chart-fill"></i> Estatísticas</h3>
+    <a href="{{ url_for('exportar_csv') }}" class="btn btn-outline-success btn-sm">
+        <i class="bi bi-filetype-csv"></i> Exportar CSV completo
+    </a>
+</div>
+
+<form class="card mb-3" method="get">
+    <div class="card-body d-flex flex-wrap gap-2 align-items-end">
+        <div>
+            <label class="form-label small mb-1">Período</label>
+            <select name="periodo" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="mes" {% if periodo == 'mes' %}selected{% endif %}>Mensal (este mês)</option>
+                <option value="semestre" {% if periodo == 'semestre' %}selected{% endif %}>Semestral (semestre atual)</option>
+                <option value="ano" {% if periodo == 'ano' %}selected{% endif %}>Anual (ano letivo)</option>
+            </select>
+        </div>
+        {% if periodo == 'ano' %}
+        <div>
+            <label class="form-label small mb-1">Ano letivo (início)</label>
+            <input type="number" name="ano_letivo" class="form-control form-control-sm" value="{{ ano_letivo or '' }}" placeholder="ex: 2025" min="2020" max="2099">
+        </div>
+        <button class="btn btn-sm btn-primary" type="submit">Aplicar</button>
+        {% endif %}
+        <div class="ms-auto">
+            <span class="badge text-bg-primary fs-6">Total: {{ stats.total }}</span>
+        </div>
+    </div>
+</form>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted small">Por Ciclo</h6>
+                <canvas data-chart="por_ciclo" data-tipo="bar"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted small">Por Ano</h6>
+                <canvas data-chart="por_ano" data-tipo="bar"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted small">Por Turma</h6>
+                <canvas data-chart="por_turma" data-tipo="bar"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted small">Por Disciplina</h6>
+                <canvas data-chart="por_disciplina" data-tipo="bar"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted small">Por Local</h6>
+                <canvas data-chart="por_local" data-tipo="doughnut"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted small">Por Motivo</h6>
+                <canvas data-chart="por_motivo" data-tipo="bar" data-horizontal="1"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted small">Evolução mensal</h6>
+                <canvas data-chart="por_mes" data-tipo="line"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script id="dadosStats" type="application/json">{{ stats|tojson }}</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/estatisticas.js') }}"></script>
+{% endblock %}
