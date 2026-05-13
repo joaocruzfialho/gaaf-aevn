@@ -117,6 +117,23 @@ def coordenador_required(view):
 
 
 # ---------------------------------------------------------------------------
+# Health check (diagnóstico — remover após confirmar funcionamento)
+# ---------------------------------------------------------------------------
+@app.route("/health")
+def health():
+    import traceback
+    try:
+        conn = db.get_conn()
+        cur = db._dictcur(conn)
+        cur.execute("SELECT COUNT(*) AS n FROM utilizadores")
+        n = cur.fetchone()["n"]
+        conn.close()
+        return {"status": "ok", "utilizadores": n, "db": str(db.DATABASE_URL)[:40] if db.DATABASE_URL else "sqlite"}
+    except Exception as e:
+        return {"status": "error", "error": str(e), "trace": traceback.format_exc()}, 500
+
+
+# ---------------------------------------------------------------------------
 # Autenticação
 # ---------------------------------------------------------------------------
 @app.route("/")
